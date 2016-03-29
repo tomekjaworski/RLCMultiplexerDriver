@@ -49,6 +49,7 @@
             this.btnRLCConnect = new System.Windows.Forms.Button();
             this.btnSendParametersToRLC = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.rbImpedance = new System.Windows.Forms.RadioButton();
             this.rbSerialCapacitance = new System.Windows.Forms.RadioButton();
             this.rbParallelCapacitance = new System.Windows.Forms.RadioButton();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -83,7 +84,6 @@
             this.lblCapacitanceOffsetFile = new System.Windows.Forms.Label();
             this.edtNumberOfMeasurementsPerPair = new System.Windows.Forms.NumericUpDown();
             this.edtNumberOfElectrodes = new System.Windows.Forms.NumericUpDown();
-            this.rbImpedance = new System.Windows.Forms.RadioButton();
             label149 = new System.Windows.Forms.Label();
             label150 = new System.Windows.Forms.Label();
             label151 = new System.Windows.Forms.Label();
@@ -194,9 +194,9 @@
             label160.ForeColor = System.Drawing.Color.White;
             label160.Location = new System.Drawing.Point(13, 11);
             label160.Name = "label160";
-            label160.Size = new System.Drawing.Size(388, 13);
+            label160.Size = new System.Drawing.Size(321, 13);
             label160.TabIndex = 0;
-            label160.Text = "Zautomatyzowany pomiar pojemnosci dla czujnika N-elektrodowego";
+            label160.Text = "Zautomatyzowany pomiar dla czujnika N-elektrodowego";
             // 
             // label161
             // 
@@ -239,9 +239,9 @@
             label165.AutoSize = true;
             label165.Location = new System.Drawing.Point(221, 438);
             label165.Name = "label165";
-            label165.Size = new System.Drawing.Size(113, 13);
+            label165.Size = new System.Drawing.Size(99, 13);
             label165.TabIndex = 457;
-            label165.Text = "Zmierzona pojemność:";
+            label165.Text = "Zmierzona wartość:";
             // 
             // label145
             // 
@@ -309,6 +309,18 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(175, 72);
             this.panel1.TabIndex = 433;
+            // 
+            // rbImpedance
+            // 
+            this.rbImpedance.AutoSize = true;
+            this.rbImpedance.Checked = true;
+            this.rbImpedance.Location = new System.Drawing.Point(6, 44);
+            this.rbImpedance.Name = "rbImpedance";
+            this.rbImpedance.Size = new System.Drawing.Size(107, 17);
+            this.rbImpedance.TabIndex = 422;
+            this.rbImpedance.TabStop = true;
+            this.rbImpedance.Text = "Impedancja (R-X)";
+            this.rbImpedance.UseVisualStyleBackColor = true;
             // 
             // rbSerialCapacitance
             // 
@@ -629,7 +641,7 @@
             this.lblCurrentCapacity.AutoSize = true;
             this.lblCurrentCapacity.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lblCurrentCapacity.ForeColor = System.Drawing.Color.Green;
-            this.lblCurrentCapacity.Location = new System.Drawing.Point(338, 438);
+            this.lblCurrentCapacity.Location = new System.Drawing.Point(319, 438);
             this.lblCurrentCapacity.Name = "lblCurrentCapacity";
             this.lblCurrentCapacity.Size = new System.Drawing.Size(21, 13);
             this.lblCurrentCapacity.TabIndex = 458;
@@ -708,17 +720,6 @@
             this.edtNumberOfElectrodes.Value = global::MultiplexerGUI.Properties.Settings.Default.electrodes;
             this.edtNumberOfElectrodes.ValueChanged += new System.EventHandler(this.edtNumberOfElectrodes_ValueChanged);
             this.edtNumberOfElectrodes.BindingContextChanged += new System.EventHandler(this.edtNumberOfElectrodes_BindingContextChanged);
-            // 
-            // rbImpedance
-            // 
-            this.rbImpedance.AutoSize = true;
-            this.rbImpedance.Checked = true;
-            this.rbImpedance.Location = new System.Drawing.Point(6, 44);
-            this.rbImpedance.Name = "rbImpedance";
-            this.rbImpedance.Size = new System.Drawing.Size(107, 17);
-            this.rbImpedance.TabIndex = 422;
-            this.rbImpedance.Text = "Impedancja (R-X)";
-            this.rbImpedance.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 

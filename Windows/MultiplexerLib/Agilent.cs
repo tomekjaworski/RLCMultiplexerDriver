@@ -15,7 +15,8 @@ namespace MultiplexerLib
         NetworkStream ns;
         StreamReader sr;
         List<string> log;
-        private MeasurementType measurement_type;
+
+        public MeasurementType MeasurementType { get; private set; }
 
         public Agilent()
         {
@@ -91,7 +92,7 @@ namespace MultiplexerLib
                     throw new NotImplementedException();
             }
 
-            this.measurement_type = type;
+            this.MeasurementType = type;
 
             this.Chatter(":function:impedance?", true);
 
@@ -237,7 +238,7 @@ namespace MultiplexerLib
         public Complex GetMeasurement()
         {
             // czy pomiar pojemności?
-            if (this.measurement_type == MeasurementType.Capacitance_Parallel || this.measurement_type == MeasurementType.Capacitance_Serial)
+            if (this.MeasurementType == MeasurementType.Capacitance_Parallel || this.MeasurementType == MeasurementType.Capacitance_Serial)
             {
                 string s = this.Chatter(":trigger:immediate", false);
                 s = this.Chatter(":fetch:impedance?", true);
@@ -255,7 +256,7 @@ namespace MultiplexerLib
             }
 
             // czy pomiar impedancji?
-            if (this.measurement_type == MeasurementType.Resistance_Reactance)
+            if (this.MeasurementType == MeasurementType.Resistance_Reactance)
             {
                 string s = this.Chatter(":trigger:immediate", false);
                 s = this.Chatter(":fetch:impedance?", true);

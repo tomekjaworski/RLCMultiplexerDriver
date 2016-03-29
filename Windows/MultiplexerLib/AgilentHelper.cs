@@ -37,27 +37,31 @@ namespace MultiplexerLib
             double multip;
 
             double scaled = GetPrefix(value, out prefix, out multip);
-            return scaled.ToString("N3") + " " + prefix + unit;
+            return scaled.ToString("N3").Replace(',', '.') + " " + prefix + unit;
         }
 
 
-        public static string ImpedanceToString(Complex impedance)
+        public static string ImpedanceToString(Complex impedance, bool only_resistance)
         {
             string sr = impedance.Real.ToString("N4").Replace(',', '.');
             string sx = impedance.Imaginary.ToString("N4").Replace(',', '.');
 
-            string s = string.Format("R = {0}; X = {1}",
+            if (only_resistance)
+                return ToSI(impedance.Real, "Ω");
+
+            return string.Format("R = {0}; X = {1}",
                 ToSI(impedance.Real, "Ω"),
                 ToSI(impedance.Imaginary, "Ω"));
-            return s;
         }
 
 
-        public static string CapacitanceToString(Complex capacitance)
+        public static string CapacitanceToString(Complex capacitance, bool only_capacitance)
         {
+            if (only_capacitance)
+                return ToSI(capacitance.Real, "F");
+
             string d = capacitance.Imaginary.ToString("N4").Replace(',', '.');
-            string s = string.Format("C = {0}; D = {1}", ToSI(capacitance.Real, "F"), d);
-            return s;
+            return string.Format("C = {0}; D = {1}", ToSI(capacitance.Real, "F"), d);
         }
 
     }

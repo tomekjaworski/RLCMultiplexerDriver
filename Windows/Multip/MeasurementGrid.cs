@@ -1,9 +1,11 @@
-﻿using System;
+﻿using MultiplexerLib;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Windows.Forms;
 
@@ -12,6 +14,7 @@ namespace MultiplexerGUI
     public partial class MeasurementGrid : Form
     {
         public DataTable data;
+        public MeasurementType MeasurementType { get; private set; }
 
         public MeasurementGrid()
         {
@@ -19,20 +22,21 @@ namespace MultiplexerGUI
             this.data = null;
         }
 
-        public DataTable PrepareDataContainer(int electrodes)
+        public DataTable PrepareDataContainer(int electrodes, MeasurementType type)
         {
             if (this.dataGridView1.DataSource != null)
                 this.dataGridView1.DataSource = null;
             this.data = new DataTable();
             for (int i = 0; i < electrodes; i++)
-                this.data.Columns.Add((i + 1).ToString(), typeof(double));
+                this.data.Columns.Add((i + 1).ToString(), typeof(Complex));
 
             object[] r = new object[electrodes];
             for (int i = 0; i < electrodes; i++)
-                r[i] = (double)0;
+                r[i] = Complex.Zero;
             for (int i = 0; i < electrodes; i++)
                 this.data.Rows.Add(r);
 
+            this.MeasurementType = type;
             this.dataGridView1.DataSource = this.data;
             this.dataGridView1.Columns[0].Visible = false;
             return this.data;
@@ -58,28 +62,33 @@ namespace MultiplexerGUI
             var grid = sender as DataGridView;
             var rowIdx = (e.RowIndex + 1).ToString();
 
-            //e.Value = 2e-4;
-            int pow = 0;
-            double cap = (double)e.Value;
-            if (cap == 0)
+            Complex value = (Complex)e.Value;
+
+            if (value == Complex.Zero)
             {
+                // puste kratki
                 e.Value = "";
                 return;
             }
 
-            if (cap > 100)
-                e.Value = "ovld";
-            else
+            // wyświetlaj pojemność
+            if (MeasurementType == MeasurementType.Capacitance_Parallel || MeasurementType == MeasurementType.Capacitance_Serial)
             {
-                string[] s = { "", "m", "u", "n", "p", "f", "a" };
+                if (value.Real > 100)
+                    e.Value = "ovld";
+                else
+                    e.Value = AgilentHelper.CapacitanceToString(value, true).Replace(" ","");
 
-                while ((int)cap == 0 && cap != 0)
-                {
-                    pow++;
-                    cap = cap * Math.Pow(10, 3);
-                }
-                e.Value = cap.ToString("N2") + s[pow] + "F";
+                return;
             }
+
+            if (MeasurementType == MeasurementType.Resistance_Reactance)
+            {
+                e.Value = AgilentHelper.ImpedanceToString(value, true).Replace(" ", "");
+                return;
+            }
+
+            throw new Exception("MeasurementType");
 
         }
 

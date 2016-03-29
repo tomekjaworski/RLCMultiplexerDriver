@@ -65,7 +65,7 @@ namespace PomiarWilgotnosci
         private void btnDoOneMeasurement_Click(object sender, EventArgs e)
         {
             Complex imp = Program.a.GetMeasurement();
-            this.label148.Text = AgilentHelper.ImpedanceToString(imp);
+            this.label148.Text = AgilentHelper.ImpedanceToString(imp, false);
         }
 
 
@@ -85,7 +85,7 @@ namespace PomiarWilgotnosci
 
             Complex imp = Program.a.GetMeasurement();
 
-            this.label148.Text = AgilentHelper.ImpedanceToString(imp);
+            this.label148.Text = AgilentHelper.ImpedanceToString(imp, false);
             Application.DoEvents();
             Thread.Sleep(0);
 

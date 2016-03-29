@@ -22,7 +22,7 @@ namespace MultiplexerGUI
         SocketDriverForm socket_driver_window;
 
         MeasurementGrid mg;
-        List<List<double>> full_sensor_measurements;
+        //List<List<Complex>> full_sensor_measurements;
 
         public MainForm()
         {
@@ -120,23 +120,6 @@ namespace MultiplexerGUI
 
         private void btnCommenceMeasurements_Click(object sender, EventArgs e)
         {
-           /* float[,] intrinsic_cap = null;
-            DialogResult dr = MessageBox.Show("Czy chcesz uwzględnić macierz pojemności własnych multipleksera w rozpoczynanym pomiarze czujnika ECT?", Application.ProductName, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-            if (dr == DialogResult.Cancel)
-                return; // e.. wlasciwie to mi sie nie chce wykonywac pomiarów... ;-)
-            if (dr == DialogResult.Yes)
-            {
-                try
-                {
-                    intrinsic_cap = this.TryLoadIntrinsicCapacitances(Properties.Settings.Default.cap_offset_file);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Błąd podczas wczytywania pliku pojemności własnych:\n " + ex.Message+"\n\nProces pomiarowy został przerwany.", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }*/
-
             int N = (int)this.edtNumberOfElectrodes.Value;
             int pairs = (N * (N - 1)) / 2;
             int measurements_per_pair = (int)this.edtNumberOfMeasurementsPerPair.Value;
@@ -147,11 +130,8 @@ namespace MultiplexerGUI
             if (mg == null)
                 mg = new MeasurementGrid();
 
-            DataTable dt = mg.PrepareDataContainer(N);
+            DataTable dt = mg.PrepareDataContainer(N, Program.a.MeasurementType);
             mg.Show();
-
-            this.full_sensor_measurements = new List<List<double>>();
-            this.full_sensor_measurements.Add(new List<double>(new double[] { N, pairs, measurements_per_pair }));
 
             Program.m.SetAllChannels(ChannelState.Ground);
             Thread.Sleep(200);
@@ -171,10 +151,6 @@ namespace MultiplexerGUI
                     Program.m.SetChannel(measured_electrode, ChannelState.Low);
                     Program.a.ShowMessage(string.Format("Elektrody {0}-{1}", excitated_electrode, measured_electrode));
 
-                    // nowy wektro pomiarowy
-                    List<double> pom = new List<double>();
-                    pom.AddRange(new double[] { excitated_electrode, measured_electrode, measurements_per_pair });
-
                     // wykonaj serię pomiaraów dla danej kombinacji elektrod
                     for (int i = 0; i < measurements_per_pair; i++)
                     {
@@ -185,18 +161,22 @@ namespace MultiplexerGUI
                         Complex cap = Program.a.GetMeasurement();
                         Application.DoEvents();
 
-                        // korekta
-                       // if (intrinsic_cap != null)
-                        //    c = c - intrinsic_cap[excitated_electrode - 1, measured_electrode - 1];
 
-                        dt.Rows[excitated_electrode - 1][measured_electrode - 1] = cap.Real;
-                        pom.Add(cap.Real);
+                        dt.Rows[excitated_electrode - 1][measured_electrode - 1] = cap;
+                        //pom.Add(cap.Real);
 
                         this.progressBar1.Value++;
-                        this.lblCurrentCapacity.Text = AgilentHelper.CapacitanceToString(cap);
+
+                        if (Program.a.MeasurementType == MeasurementType.Capacitance_Parallel || Program.a.MeasurementType == MeasurementType.Capacitance_Serial)
+                            this.lblCurrentCapacity.Text = AgilentHelper.CapacitanceToString(cap, false);
+                        else
+                            if (Program.a.MeasurementType == MeasurementType.Resistance_Reactance)
+                                this.lblCurrentCapacity.Text = AgilentHelper.ImpedanceToString(cap, false);
+                            else
+                                this.lblCurrentCapacity.Text = "???????";
+
                         Application.DoEvents();
                     }
-                    full_sensor_measurements.Add(pom);
 
                     Program.m.SetChannel(measured_electrode, ChannelState.Ground);
                     Application.DoEvents();
@@ -230,9 +210,16 @@ namespace MultiplexerGUI
                 string path = saveFileDialog1.FileName;
                 string fn = Path.GetFileNameWithoutExtension(path);
                 string fn1 = fn + "-marix" + Path.GetExtension(path);
-                string fn2 = fn + "-list" + Path.GetExtension(path); ;
                 fn1 = Path.Combine(Path.GetDirectoryName(path), fn1);
-                fn2 = Path.Combine(Path.GetDirectoryName(path), fn2);
+
+                bool cap = this.mg.MeasurementType == MeasurementType.Capacitance_Parallel || this.mg.MeasurementType == MeasurementType.Capacitance_Serial;
+                bool imp = this.mg.MeasurementType == MeasurementType.Resistance_Reactance;
+
+                int cnt = 0;
+                cnt = cap ? cnt + 1 : cnt;
+                cnt = imp ? cnt + 1 : cnt;
+                Debug.Assert(cnt == 1);
+
 
                 // zapis macierzy pomiarów (ostatnich pomiarow)
                 using (StreamWriter sw = new StreamWriter(new FileStream(fn1, FileMode.Create, FileAccess.ReadWrite, FileShare.None)))
@@ -242,38 +229,17 @@ namespace MultiplexerGUI
                     {
                         for (int c = 0; c < dt.Columns.Count; c++)
                         {
-                            double val = (double)dt.Rows[r][c];
-                            string s = string.Format("{0} ", val);
-                            sw.Write(s.Replace(',', '.'));
+                            Complex val = (Complex)dt.Rows[r][c];
+
+                            string s = "????";
+                            if (cap)
+                                s = string.Format("{0} ", val.Real).Replace(',', '.');
+                            if (imp)
+                                s = val.ToString().Replace(",", ";");
+                            sw.Write(s);
                         }
                         sw.WriteLine();
                     }
-                }
-
-                // zapis listy pomiarów (syćkich)
-                using (StreamWriter sw = new StreamWriter(new FileStream(fn2, FileMode.Create, FileAccess.ReadWrite, FileShare.None)))
-                {
-                    for (int i = 0; i < full_sensor_measurements.Count; i++)
-                    {
-                        List<double> pom = this.full_sensor_measurements[i];
-
-                        if (i == 0)
-                        {
-                            // naglowek
-                            sw.WriteLine("{0} {1} {2}", (int)pom[0], (int)pom[1], (int)pom[2]);
-                            continue;
-                        }
-
-                        sw.Write("{0} {1} {2} ", (int)pom[0], (int)pom[1], (int)pom[2]);
-                        for (int j = 3; j < pom.Count; j++)
-                        {
-                            string s = string.Format("{0} ", pom[j]);
-                            sw.Write(s.Replace(',', '.'));
-
-                        }
-                        sw.WriteLine();
-                    }
-
                 }
 
             }
@@ -287,9 +253,9 @@ namespace MultiplexerGUI
         {
             Complex cap = Program.a.GetMeasurement();
             if (this.rbParallelCapacitance.Checked || this.rbSerialCapacitance.Checked)
-                this.label148.Text = AgilentHelper.CapacitanceToString(cap);
+                this.label148.Text = AgilentHelper.CapacitanceToString(cap, false);
             else if (this.rbImpedance.Checked)
-                this.label148.Text = AgilentHelper.ImpedanceToString(cap);
+                this.label148.Text = AgilentHelper.ImpedanceToString(cap, false);
             else
                 this.label148.Text = "????";
 
