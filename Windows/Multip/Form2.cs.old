@@ -1,0 +1,481 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using MultiplexerLib;
+using System.IO;
+using System.Threading;
+
+namespace MultiplexerGUI
+{
+    public partial class Form2 : Form
+    {
+        Form1 f;
+        MeasurementGrid mg;
+        List<List<double>> pomiary;
+
+        public Form2()
+        {
+            InitializeComponent();
+
+            foreach (Control c in this.Controls)
+                if (c is Label)
+                {
+                    Label l = c as Label;
+                    if (l.Tag == null)
+                        continue;
+
+                    if (l.Tag.ToString() == "ABCD")
+                    {
+                        l.Tag = l.Text;
+
+                        if ((l.Tag as string).Contains('L'))
+                            l.Text = l.Text.Replace("L", "");
+                        else
+                            l.Text = "-";
+                    }
+                }
+
+
+            this.UpdateGUI();
+        }
+
+        private void label33_Click(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                Label label = sender as Label;
+                string tag = label.Tag as string;
+
+                string nazwa = "???";
+                int numer = 0;
+
+                // wyciagniecie numeru karty
+                while (char.IsDigit(tag[0]))
+                {
+                    numer *= 10;
+                    numer += tag[0] - '0';
+                    tag = tag.Remove(0, 1);
+                }
+
+                if (tag == "A") numer = numer + 16 * 0;
+                if (tag == "B") numer = numer + 16 * 1;
+                if (tag == "C") numer = numer + 16 * 2;
+                if (tag == "D") numer = numer + 16 * 3;
+
+                if (tag == "L")
+                {
+                    bool led = !Program.m.GetLED(numer - 1);
+                    //  label.BackColor = led ? Color.Red : Color.FromArgb(255,192,192);
+                    Program.m.SetLED(numer - 1, led);
+                    this.UpdateGUI();
+                    return;
+                }
+
+                ChannelState state = Program.m.GetChannel(numer);
+
+                // ustawienie nastepnego
+                if (state == ChannelState.High)
+                    state = ChannelState.Low;
+                else
+                    if (state == ChannelState.Low)
+                        state = ChannelState.Ground;
+                    else
+                        if (state == ChannelState.Ground)
+                            state = ChannelState.None;
+                        else
+                            state = ChannelState.High;
+
+
+                Program.m.SetChannel(numer, state);
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas wysyłania macierzy stanów:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+
+            this.UpdateGUI();
+        }
+
+        private void UpdateGUI()
+        {
+            foreach (Control c in this.Controls)
+            {
+                if (!(c is Label))
+                    continue;
+
+                Label label = c as Label;
+                string nazwa = "???";
+                int numer = 0;
+                string tag = label.Tag as string;
+                if (string.IsNullOrEmpty(tag))
+                    continue;
+
+                // wyciagniecie numeru karty
+                while (char.IsDigit(tag[0]))
+                {
+                    numer *= 10;
+                    numer += tag[0] - '0';
+                    tag = tag.Remove(0, 1);
+                }
+
+                if (tag.Length != 1)
+                    continue;
+
+                if (tag == "A") numer = numer + 16 * 0;
+                if (tag == "B") numer = numer + 16 * 1;
+                if (tag == "C") numer = numer + 16 * 2;
+                if (tag == "D") numer = numer + 16 * 3;
+
+                if (tag == "L")
+                {
+                    bool led = Program.m.GetLED(numer - 1);
+                    label.BackColor = led ? Color.Red : Color.FromArgb(255, 192, 192);
+                    continue;
+                }
+
+
+                ChannelState state = Program.m.GetChannel(numer);
+
+                if (state == ChannelState.High)
+                {
+                    label.Text = "Hi";
+                    label.ForeColor = Color.Red;
+                }
+
+                if (state == ChannelState.Low)
+                {
+                    label.Text = "Lo";
+                    label.ForeColor = Color.Blue;
+                }
+
+                if (state == ChannelState.Ground)
+                {
+                    label.Text = "gnd";
+                    label.ForeColor = Color.Black;
+                }
+
+                if (state == ChannelState.None)
+                {
+                    label.Text = "-";
+                    label.ForeColor = Color.DarkGray;
+                }
+
+            }
+        }
+
+        private void btnGroundAll_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Program.m.SetAllChannels(ChannelState.Ground);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas wysyłania macierzy stanów:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+            this.UpdateGUI();
+        }
+
+
+        private void btnLowAll_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Program.m.SetAllChannels(ChannelState.Low);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas wysyłania macierzy stanów:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+            this.UpdateGUI();
+        }
+
+        private void btnOffAll_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Program.m.SetAllChannels(ChannelState.None);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas wysyłania macierzy stanów:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+            this.UpdateGUI();
+        }
+
+        private void btnAllLEDOff_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Program.m.SetAllLED(false);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas wysyłania macierzy stanów:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+            this.UpdateGUI();
+        }
+
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Program.m.Connect(this.tbMultiplexerAddress.Text);
+
+                MessageBox.Show("Połączenie z multiplexerem nawiązane", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas łączenia z multiplekserem:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Program.m.SafeDisconnect();
+            }
+        }
+
+        private void btnRLCConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Program.a.Connect(this.tbRLCAddress.Text, 5000);
+                MessageBox.Show("Połączenie z mostkiem RLC nawiązane", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas łączenia z multiplekserem:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Program.m.SafeDisconnect();
+            }
+        }
+
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            if (f == null)
+            {
+                this.f = new Form1();
+                this.f.Show();
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (this.rbParallelImpedance.Checked && this.rbSerialImpedance.Checked || !this.rbParallelImpedance.Checked && !this.rbSerialImpedance.Checked)
+                this.rbParallelImpedance.Checked = true;
+
+
+            bool para = this.rbParallelImpedance.Checked;
+            int freq = (int)this.edtMeasurementFrequency.Value;
+            double voltage = (double)this.edtVoltage.Value;
+            double delay = (double)this.edtTriggerDelay.Value;
+            int average = (int)this.edtAverage.Value;
+
+
+            try
+            {
+                Program.a.SendConfiguration(para, freq, voltage, delay, 0,average);
+                MessageBox.Show("Konfiguracja wysłana do mostka", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas komunikacji z mostkiem:\n" + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Program.a.SafeDisconnect();
+            }
+
+        }
+
+        string FormatSmallValue(double c, string fmt)
+        {
+            int pow = 0;
+
+            string view = "";
+            if (c > 100)
+                view = "overload";
+            else
+            {
+                string[] s = { "", "m", "u", "n", "p", "f", "a" };
+
+                while ((int)c == 0)
+                {
+                    pow++;
+                    c = c * Math.Pow(10, 3);
+                }
+                view = c.ToString(fmt) + s[pow] + "F";
+            }
+
+            return view;
+        }
+
+        private void edtNumberOfElectrodes_ValueChanged(object sender, EventArgs e)
+        {
+            int N = (int)this.edtNumberOfElectrodes.Value;
+            int meas = (N * (N - 1)) / 2;
+            this.lblNumberOfMeasurements.Text = meas.ToString();
+        }
+
+        private void edtNumberOfElectrodes_BindingContextChanged(object sender, EventArgs e)
+        {
+           this.edtNumberOfElectrodes_ValueChanged(sender, e);
+        }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            int N = (int)this.edtNumberOfElectrodes.Value;
+            int pairs = (N * (N - 1)) / 2;
+            int measurements_per_pair = (int)this.edtNumberOfMeasurementsPerPair.Value;
+
+            this.progressBar1.Value = 0;
+            this.progressBar1.Maximum = pairs * measurements_per_pair;
+
+            if (mg == null)
+                mg = new MeasurementGrid();
+
+            DataTable dt = mg.PrepareDataContainer(N);
+            mg.Show();
+
+            this.pomiary = new List<List<double>>();
+            this.pomiary.Add(new List<double>(new double[] { N, pairs, measurements_per_pair }));
+
+            Program.m.SetAllChannels(ChannelState.Ground);
+            Thread.Sleep(200);
+
+            Program.a.RestartMeasurementCycle();
+
+            for (int hi = 1; hi <= N; hi++)
+            {
+                Program.m.SetChannel(hi, ChannelState.High);
+                Thread.Sleep(300);
+                Program.a.MeasureFrequency();
+
+                for (int lo = hi + 1; lo <= N; lo++)
+                {
+                    Program.m.SetChannel(lo, ChannelState.Low);
+                    Program.a.ShowMessage(string.Format("Elektrody {0}-{1}", hi, lo));
+
+                    List<double> pom = new List<double>();
+                    pom.AddRange(new double[] { hi, lo, measurements_per_pair });
+
+                    for (int i = 0; i < measurements_per_pair; i++)
+                    {
+                        Application.DoEvents();
+                        this.UpdateGUI();
+                        Application.DoEvents();
+                        double c = Program.a.MeasureFrequency();
+                        Application.DoEvents();
+
+                        dt.Rows[hi - 1][lo - 1] = c;
+                        pom.Add(c);
+
+                        this.progressBar1.Value++;
+                        this.lblCurrentCapacity.Text = FormatSmallValue(c, "N5");
+                        Application.DoEvents();
+                    }
+                    pomiary.Add(pom);
+
+                    Program.m.SetChannel(lo, ChannelState.Ground);
+                    Application.DoEvents();
+
+                }
+
+                Program.m.SetChannel(hi, ChannelState.Ground);
+                //Program.a.MeasureFrequency();
+                //Application.DoEvents(); 
+            }
+
+            MessageBox.Show(
+                string.Format("Pomiar zakończony.\nWykonano {0} pomiarów dla {1} par", measurements_per_pair * pairs, pairs),
+                Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (mg == null)
+                return;
+
+            try
+            {
+                DataTable dt = this.mg.data;
+
+                saveFileDialog1.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
+                if (saveFileDialog1.ShowDialog() != DialogResult.OK)
+                    return;
+
+                string path = saveFileDialog1.FileName;
+                string fn = Path.GetFileNameWithoutExtension(path);
+                string fn1 = fn + "-marix" + Path.GetExtension(path);
+                string fn2 = fn + "-list" + Path.GetExtension(path); ;
+                fn1 = Path.Combine(Path.GetDirectoryName(path), fn1);
+                fn2 = Path.Combine(Path.GetDirectoryName(path), fn2);
+
+                // zapis macierzy pomiarów (ostatnich pomiarow)
+                using (StreamWriter sw = new StreamWriter(new FileStream(fn1, FileMode.Create, FileAccess.ReadWrite, FileShare.None)))
+                {
+                    sw.WriteLine("{0} {1}", dt.Rows.Count, dt.Columns.Count);
+                    for (int r = 0; r < dt.Rows.Count; r++)
+                    {
+                        for (int c = 0; c < dt.Columns.Count; c++)
+                        {
+                            double val = (double)dt.Rows[r][c];
+                            string s = string.Format("{0} ", val);
+                            sw.Write(s.Replace(',', '.'));
+                        }
+                        sw.WriteLine();
+                    }
+                }
+
+                // zapis listy pomiarów (syćkich)
+                using (StreamWriter sw = new StreamWriter(new FileStream(fn2, FileMode.Create, FileAccess.ReadWrite, FileShare.None)))
+                {
+                    for (int i = 0; i < pomiary.Count; i++)
+                    {
+                        List<double> pom = this.pomiary[i];
+
+                        if (i == 0)
+                        {
+                            // naglowek
+                            sw.WriteLine("{0} {1} {2}", (int)pom[0], (int)pom[1], (int)pom[2]);
+                            continue;
+                        }
+
+                        sw.Write("{0} {1} {2} ", (int)pom[0], (int)pom[1], (int)pom[2]);
+                        for (int j = 3; j < pom.Count; j++)
+                        {
+                            string s = string.Format("{0} ", pom[j]);
+                            sw.Write(s.Replace(',', '.'));
+
+                        }
+                        sw.WriteLine();
+                    }
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas zapisu danych: " + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnDoOneMeasurement_Click(object sender, EventArgs e)
+        {
+            double c = Program.a.MeasureFrequency();
+            this.label148.Text = FormatSmallValue(c, "N2");
+        }
+
+
+    }
+}
