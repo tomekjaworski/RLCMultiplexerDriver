@@ -11,6 +11,8 @@ using System.IO;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
+using System.Numerics;
+using System.Diagnostics;
 
 namespace MultiplexerGUI
 {
@@ -75,20 +77,25 @@ namespace MultiplexerGUI
 
         private void btnSendParametersToRLC_Click(object sender, EventArgs e)
         {
-            if (this.rbParallelImpedance.Checked && this.rbSerialImpedance.Checked || !this.rbParallelImpedance.Checked && !this.rbSerialImpedance.Checked)
-                this.rbParallelImpedance.Checked = true;
+            MeasurementType mt = MeasurementType.Unknown;
 
+            if (this.rbParallelCapacitance.Checked)
+                mt = MeasurementType.Capacitance_Parallel;
+            if (this.rbSerialCapacitance.Checked)
+                mt = MeasurementType.Capacitance_Serial;
+            if (this.rbImpedance.Checked)
+                mt = MeasurementType.Resistance_Reactance;
 
-            bool para = this.rbParallelImpedance.Checked;
             int freq = (int)this.edtMeasurementFrequency.Value;
             double voltage = (double)this.edtVoltage.Value;
             double delay = (double)this.edtTriggerDelay.Value;
             int average = (int)this.edtAverage.Value;
 
+            Debug.Assert(mt != MeasurementType.Unknown);
 
             try
             {
-                Program.a.SendConfiguration(para ? MeasurementType.Capacitance_Parallel : MeasurementType.Capacitance_Serial, freq, voltage, delay, 0,average);
+                Program.a.SendConfiguration(mt, freq, voltage, delay, 0, average);
                 MessageBox.Show("Konfiguracja wysłana do mostka", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -156,7 +163,7 @@ namespace MultiplexerGUI
                 // ustaw elektrodę wymuszającą na wysokim wejsciu mostka
                 Program.m.SetChannel(excitated_electrode, ChannelState.High);
                 Thread.Sleep(300);
-                Program.a.MeasureFrequency();
+                Program.a.GetMeasurement();
 
                 for (int measured_electrode = excitated_electrode + 1; measured_electrode <= N; measured_electrode++)
                 {
@@ -175,18 +182,18 @@ namespace MultiplexerGUI
                         if (this.socket_driver_window != null)
                             this.socket_driver_window.UpdateGUI();
                         Application.DoEvents();
-                        double c = Program.a.MeasureFrequency();
+                        Complex cap = Program.a.GetMeasurement();
                         Application.DoEvents();
 
                         // korekta
                        // if (intrinsic_cap != null)
                         //    c = c - intrinsic_cap[excitated_electrode - 1, measured_electrode - 1];
 
-                        dt.Rows[excitated_electrode - 1][measured_electrode - 1] = c;
-                        pom.Add(c);
+                        dt.Rows[excitated_electrode - 1][measured_electrode - 1] = cap.Real;
+                        pom.Add(cap.Real);
 
                         this.progressBar1.Value++;
-                        this.lblCurrentCapacity.Text = FormatSmallValue(c, "N5");
+                        this.lblCurrentCapacity.Text = AgilentHelper.CapacitanceToString(cap);
                         Application.DoEvents();
                     }
                     full_sensor_measurements.Add(pom);
@@ -278,8 +285,14 @@ namespace MultiplexerGUI
 
         private void btnDoOneMeasurement_Click(object sender, EventArgs e)
         {
-            double c = Program.a.MeasureFrequency();
-            this.label148.Text = FormatSmallValue(c, "N2");
+            Complex cap = Program.a.GetMeasurement();
+            if (this.rbParallelCapacitance.Checked || this.rbSerialCapacitance.Checked)
+                this.label148.Text = AgilentHelper.CapacitanceToString(cap);
+            else if (this.rbImpedance.Checked)
+                this.label148.Text = AgilentHelper.ImpedanceToString(cap);
+            else
+                this.label148.Text = "????";
+
         }
 
         private void btnSearchForMultiplexer_Click(object sender, EventArgs e)
@@ -331,30 +344,6 @@ namespace MultiplexerGUI
         }
 
 
-        ///
-
-        static string FormatSmallValue(double c, string fmt)
-        {
-            int pow = 0;
-
-            string view = "";
-            if (c > 100)
-                view = "overload";
-            else
-            {
-                // przyrostek (10e-3=m, 10e-6=u, itd...)
-                string[] s = { "", "m", "u", "n", "p", "f", "a" };
-
-                while ((int)c == 0)
-                {
-                    pow++;
-                    c = c * Math.Pow(10, 3);
-                }
-                view = c.ToString(fmt) + s[pow] + "F";
-            }
-
-            return view;
-        }
 
         private void btnSelectIntrinsicCaps_Click(object sender, EventArgs e)
         {

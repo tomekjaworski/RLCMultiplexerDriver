@@ -64,18 +64,11 @@ namespace PomiarWilgotnosci
 
         private void btnDoOneMeasurement_Click(object sender, EventArgs e)
         {
-            Complex imp = Program.a.MeasureImpedance();
-            this.label148.Text = ImpedanceToString(imp);
+            Complex imp = Program.a.GetMeasurement();
+            this.label148.Text = AgilentHelper.ImpedanceToString(imp);
         }
 
-        public static string ImpedanceToString(Complex impedance)
-        {
-            string sr = impedance.Real.ToString("N2").Replace(',','.');
-            string sx = impedance.Imaginary.ToString("N2").Replace(',', '.');
 
-            string s = string.Format("R = {0}Ω; X = {1}Ω", sr, sx);
-            return s;
-        }
 
         private void btnStartStop_Click(object sender, EventArgs e)
         {
@@ -90,9 +83,9 @@ namespace PomiarWilgotnosci
             Application.DoEvents();
             Thread.Sleep(0);
 
-            Complex imp = Program.a.MeasureImpedance();
+            Complex imp = Program.a.GetMeasurement();
 
-            this.label148.Text = ImpedanceToString(imp);
+            this.label148.Text = AgilentHelper.ImpedanceToString(imp);
             Application.DoEvents();
             Thread.Sleep(0);
 

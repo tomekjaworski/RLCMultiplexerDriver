@@ -8,6 +8,7 @@ namespace MultiplexerLib
 
     public enum MeasurementType
     {
+        Unknown,
         Capacitance_Parallel,
         Capacitance_Serial,
         Resistance_Reactance

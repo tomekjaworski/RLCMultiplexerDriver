@@ -15,6 +15,7 @@ namespace MultiplexerLib
         NetworkStream ns;
         StreamReader sr;
         List<string> log;
+        private MeasurementType measurement_type;
 
         public Agilent()
         {
@@ -89,6 +90,9 @@ namespace MultiplexerLib
                 default:
                     throw new NotImplementedException();
             }
+
+            this.measurement_type = type;
+
             this.Chatter(":function:impedance?", true);
 
             this.Chatter(":frequency " + frequency.ToString(), false);
@@ -195,7 +199,7 @@ namespace MultiplexerLib
             this.InternalClose();
         }
 
-        public double MeasureFrequency()
+        public Complex __MeasureFrequency()
         {
             string s = this.Chatter(":trigger:immediate", false);
             s = this.Chatter(":fetch:impedance?", true);
@@ -205,18 +209,14 @@ namespace MultiplexerLib
             s = s.Replace(".", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
 
             string[] data = s.Split(';');
-            double capacity = double.Parse(data[0]);
-            double d = double.Parse(data[1]);
+            double capacity = double.Parse(data[0]); // pojemność
+            double dissipation = double.Parse(data[1]); // współczynnik rozpraszania energii
             double unknown = double.Parse(data[2]);
 
-            //if (capacity > 10)
-            //    capacity = -1; // overload
-
-            return capacity;
-
+            return new Complex(capacity, dissipation);
         }
 
-        public Complex MeasureImpedance()
+        public Complex __MeasureImpedance()
         {
             string s = this.Chatter(":trigger:immediate", false);
             s = this.Chatter(":fetch:impedance?", true);
@@ -232,6 +232,48 @@ namespace MultiplexerLib
 
             Complex imp = new Complex(resistance, reactance);
             return imp;
+        }
+
+        public Complex GetMeasurement()
+        {
+            // czy pomiar pojemności?
+            if (this.measurement_type == MeasurementType.Capacitance_Parallel || this.measurement_type == MeasurementType.Capacitance_Serial)
+            {
+                string s = this.Chatter(":trigger:immediate", false);
+                s = this.Chatter(":fetch:impedance?", true);
+
+                s = s.Replace(',', ';');
+                s = s.Replace(",", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+                s = s.Replace(".", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+
+                string[] data = s.Split(';');
+                double capacity = double.Parse(data[0]); // pojemność
+                double dissipation = double.Parse(data[1]); // współczynnik rozpraszania energii
+                double unknown = double.Parse(data[2]);
+
+                return new Complex(capacity, dissipation);
+            }
+
+            // czy pomiar impedancji?
+            if (this.measurement_type == MeasurementType.Resistance_Reactance)
+            {
+                string s = this.Chatter(":trigger:immediate", false);
+                s = this.Chatter(":fetch:impedance?", true);
+
+                s = s.Replace(',', ';');
+                s = s.Replace(",", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+                s = s.Replace(".", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+
+                string[] data = s.Split(';');
+                double resistance = double.Parse(data[0]); // rezystancja
+                double reactance = double.Parse(data[1]); // reaktancja
+                double unknown = double.Parse(data[2]);
+
+                Complex imp = new Complex(resistance, reactance);
+                return imp;
+            }
+
+            throw new Exception("Nieoprogramowany typ pomiaru");
         }
 
 

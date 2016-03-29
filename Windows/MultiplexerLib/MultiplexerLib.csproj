@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agilent.cs" />
+    <Compile Include="AgilentHelper.cs" />
     <Compile Include="MeasurementType.cs" />
     <Compile Include="Multiplexer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
