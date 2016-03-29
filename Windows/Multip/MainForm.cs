@@ -88,7 +88,7 @@ namespace MultiplexerGUI
 
             try
             {
-                Program.a.SendConfiguration(para, freq, voltage, delay, 0,average);
+                Program.a.SendConfiguration(para ? MeasurementType.Capacitance_Parallel : MeasurementType.Capacitance_Serial, freq, voltage, delay, 0,average);
                 MessageBox.Show("Konfiguracja wysłana do mostka", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)

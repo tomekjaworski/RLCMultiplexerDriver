@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
+using System.Numerics;
 
 namespace MultiplexerLib
 {
@@ -55,7 +56,7 @@ namespace MultiplexerLib
             response = this.Chatter(":system:error:next?", true);
         }
 
-        public void SendConfiguration(bool parallel, int frequency, double voltage, double trigger_delay, double step_delay, int average)
+        public void SendConfiguration(MeasurementType type, int frequency, double voltage, double trigger_delay, double step_delay, int average)
         {
             this.RestartMeasurementCycle();
 
@@ -73,10 +74,21 @@ namespace MultiplexerLib
 
 
             // tryb pomiaru (rownolegly/szeregowy)
-            if (parallel)
-                this.Chatter(":function:impedance CpD", false);
-            else
-                this.Chatter(":function:impedance CsD", false);
+            switch (type)
+            {
+                case MeasurementType.Capacitance_Parallel:
+                    this.Chatter(":function:impedance CpD", false);
+                    break;
+                case MeasurementType.Capacitance_Serial:
+                    this.Chatter(":function:impedance CsD", false);
+                    break;
+                case MeasurementType.Resistance_Reactance:
+                    this.Chatter(":function:impedance RX", false);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
             this.Chatter(":function:impedance?", true);
 
             this.Chatter(":frequency " + frequency.ToString(), false);
@@ -202,6 +214,24 @@ namespace MultiplexerLib
 
             return capacity;
 
+        }
+
+        public Complex MeasureImpedance()
+        {
+            string s = this.Chatter(":trigger:immediate", false);
+            s = this.Chatter(":fetch:impedance?", true);
+
+            s = s.Replace(',', ';');
+            s = s.Replace(",", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+            s = s.Replace(".", Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+
+            string[] data = s.Split(';');
+            double resistance = double.Parse(data[0]); // rezystancja
+            double reactance = double.Parse(data[1]); // reaktancja
+            double unknown = double.Parse(data[2]);
+
+            Complex imp = new Complex(resistance, reactance);
+            return imp;
         }
 
 
