@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiplexerGUI", "Multip\MultiplexerGUI.csproj", "{88ADC220-92D7-477C-B1F1-42A0FD7B09AF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiplexerLib", "MultiplexerLib\MultiplexerLib.csproj", "{0A82491A-AD67-4CB1-89BE-D580E20A99D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PomiarWilgotnosci", "PomiarWilgotnosci\PomiarWilgotnosci.csproj", "{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{0A82491A-AD67-4CB1-89BE-D580E20A99D2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A82491A-AD67-4CB1-89BE-D580E20A99D2}.Release|x86.ActiveCfg = Release|x86
 		{0A82491A-AD67-4CB1-89BE-D580E20A99D2}.Release|x86.Build.0 = Release|x86
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Debug|x86.Build.0 = Debug|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Release|x86.ActiveCfg = Release|Any CPU
+		{7B0AC0EC-8E91-4E88-A706-9E3B6E4A6D8D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
