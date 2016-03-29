@@ -63,6 +63,10 @@ namespace MultiplexerLib
             this.Chatter(":format:data ascii", false);
             this.Chatter(":format:data?", true);
 
+            // długi format
+            this.Chatter(":format:ascii:long ON", false);
+            this.Chatter(":format:ascii:long?", true);
+
             // wyzwalanie pomiaru
             this.Chatter(":trigger:source bus", false);
             this.Chatter(":trigger:source?", true);
