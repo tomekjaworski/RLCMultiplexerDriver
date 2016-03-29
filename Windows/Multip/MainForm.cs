@@ -147,8 +147,7 @@ namespace MultiplexerGUI
             this.full_sensor_measurements.Add(new List<double>(new double[] { N, pairs, measurements_per_pair }));
 
             Program.m.SetAllChannels(ChannelState.Ground);
-            //RW - przerwa między ustawieniem masy (czas rozładowania czujnika)
-            Thread.Sleep(1000);
+            Thread.Sleep(200);
 
             Program.a.RestartMeasurementCycle();
 
@@ -156,8 +155,7 @@ namespace MultiplexerGUI
             {
                 // ustaw elektrodę wymuszającą na wysokim wejsciu mostka
                 Program.m.SetChannel(excitated_electrode, ChannelState.High);
-                //czas między ustawieniem elektrody nadawczej a wykonywanie serii pomiarów
-                Thread.Sleep(500);
+                Thread.Sleep(300);
                 Program.a.MeasureFrequency();
 
                 for (int measured_electrode = excitated_electrode + 1; measured_electrode <= N; measured_electrode++)
