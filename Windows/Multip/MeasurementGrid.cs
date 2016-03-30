@@ -16,10 +16,13 @@ namespace MultiplexerGUI
         public DataTable data;
         public MeasurementType MeasurementType { get; private set; }
 
+        double rmin, rmax;
+
         public MeasurementGrid()
         {
             InitializeComponent();
             this.data = null;
+
         }
 
         public DataTable PrepareDataContainer(int electrodes, MeasurementType type)
@@ -39,8 +42,38 @@ namespace MultiplexerGUI
             this.MeasurementType = type;
             this.dataGridView1.DataSource = this.data;
             this.dataGridView1.Columns[0].Visible = false;
+
+            this.data.RowChanged += Data_RowChanged;
+
+            this.RecalculateColors();
+
             return this.data;
         }
+
+        private void Data_RowChanged(object sender, DataRowChangeEventArgs e)
+        {
+            this.RecalculateColors();
+            this.dataGridView1.Invalidate();
+
+        }
+
+        private void RecalculateColors()
+        {
+            rmin = double.MaxValue;
+            rmax = double.MinValue;
+
+            for (int r = 0; r < data.Rows.Count; r++)
+                for (int c = 0; c < data.Columns.Count; c++)
+                {
+                    Complex cp = (Complex)data.Rows[r][c];
+                    if (cp == Complex.Zero)
+                        continue;
+          
+                    rmin = Math.Min(rmin, cp.Real);
+                    rmax = Math.Max(rmax, cp.Real);
+                }
+        }
+
         private void dgGrid_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
         {
             var grid = sender as DataGridView;
@@ -103,5 +136,30 @@ namespace MultiplexerGUI
             this.Hide();
         }
 
+        private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex == -1 || e.ColumnIndex == -1)
+                return;
+
+            Complex value = (Complex)e.Value;
+
+            if (value.Real < rmin || value.Real > rmax)
+            {
+                e.CellStyle.ForeColor = Color.Green;
+                return;
+            }
+
+            if (rmax == rmin)
+            {
+                e.CellStyle.BackColor = Color.Yellow;
+                return;
+            }
+
+            double coef = 1.0-(value.Real - rmin) / (rmax - rmin);
+            coef = 255.0 * coef;
+
+            Color c = Color.FromArgb(255, (int)coef, (int)coef);
+            e.CellStyle.BackColor = c;
+        }
     }
 }

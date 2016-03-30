@@ -154,5 +154,29 @@ namespace MultiplexerGUI.Properties {
                 this["cap_offset_file"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string meas_file_name {
+            get {
+                return ((string)(this["meas_file_name"]));
+            }
+            set {
+                this["meas_file_name"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("300")]
+        public decimal interval {
+            get {
+                return ((decimal)(this["interval"]));
+            }
+            set {
+                this["interval"] = value;
+            }
+        }
     }
 }

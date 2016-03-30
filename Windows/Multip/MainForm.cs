@@ -22,7 +22,6 @@ namespace MultiplexerGUI
         SocketDriverForm socket_driver_window;
 
         MeasurementGrid mg;
-        //List<List<Complex>> full_sensor_measurements;
 
         public MainForm()
         {
@@ -31,9 +30,9 @@ namespace MultiplexerGUI
             this.relay_driver_window = new RelayDriverForm();
             this.socket_driver_window = new SocketDriverForm();
 
+            this.UpdateGUI();
         }
-
-    
+   
 
         private void btnConnectToMultiplexer_Click(object sender, EventArgs e)
         {
@@ -42,7 +41,6 @@ namespace MultiplexerGUI
                 Program.m.Connect(this.tbMultiplexerAddress.Text);
                 this.tmrMultKeepAlive.Start();
                 this.UpdateGUI();
-                //MessageBox.Show("Połączenie z multiplexerem nawiązane", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -68,11 +66,7 @@ namespace MultiplexerGUI
 
         private void btnShowRelayDriverWindow_Click(object sender, EventArgs e)
         {
-            //if (relay_driver_window == null)
-            //{
-              //  this.relay_driver_window = new RelayDriverForm();
-                this.relay_driver_window.Show();
-            //}
+            this.relay_driver_window.Show();
         }
 
         private void btnSendParametersToRLC_Click(object sender, EventArgs e)
@@ -96,7 +90,7 @@ namespace MultiplexerGUI
             try
             {
                 Program.a.SendConfiguration(mt, freq, voltage, delay, 0, average);
-                MessageBox.Show("Konfiguracja wysłana do mostka", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Konfiguracja wysłana do mostka.\nTryb pomiarowy=" + mt.ToString(), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -120,6 +114,33 @@ namespace MultiplexerGUI
 
         private void btnCommenceMeasurements_Click(object sender, EventArgs e)
         {
+            // pobierz nazwę pliku i uzupełnij ją o datę i czas
+            string fname = Properties.Settings.Default.meas_file_name;
+            string dt = DateTime.Now.ToString("HHmmss-ddMMyyyy");
+            fname = Path.Combine(Path.GetDirectoryName(fname), Path.GetFileNameWithoutExtension(fname) + "-" + dt + Path.GetExtension(fname));
+
+
+
+            if (Program.a.MeasurementType == MeasurementType.Capacitance_Parallel || Program.a.MeasurementType == MeasurementType.Capacitance_Serial)
+            {
+                this.DoCapacitanceMeasurement(sender == this.btnCommenceMeasurements);
+                this.SaveCapacitanceData(fname);
+            }
+            else
+            {
+                this.DoImpedanceMeasurement(sender == this.btnCommenceMeasurements);
+                this.SaveImpedanceData(fname);
+            }
+
+
+
+        }
+
+
+        private void DoCapacitanceMeasurement(bool show_finish_message)
+        {
+            DateTime tstart = DateTime.Now;
+
             int N = (int)this.edtNumberOfElectrodes.Value;
             int pairs = (N * (N - 1)) / 2;
             int measurements_per_pair = (int)this.edtNumberOfMeasurementsPerPair.Value;
@@ -167,13 +188,7 @@ namespace MultiplexerGUI
 
                         this.progressBar1.Value++;
 
-                        if (Program.a.MeasurementType == MeasurementType.Capacitance_Parallel || Program.a.MeasurementType == MeasurementType.Capacitance_Serial)
-                            this.lblCurrentCapacity.Text = AgilentHelper.CapacitanceToString(cap, false);
-                        else
-                            if (Program.a.MeasurementType == MeasurementType.Resistance_Reactance)
-                                this.lblCurrentCapacity.Text = AgilentHelper.ImpedanceToString(cap, false);
-                            else
-                                this.lblCurrentCapacity.Text = "???????";
+                        this.lblCurrentCapacity.Text = AgilentHelper.CapacitanceToString(cap, false);
 
                         Application.DoEvents();
                     }
@@ -188,38 +203,142 @@ namespace MultiplexerGUI
                 //Application.DoEvents(); 
             }
 
-            MessageBox.Show(
-                string.Format("Pomiar zakończony.\nWykonano {0} pomiarów dla {1} par", measurements_per_pair * pairs, pairs),
-                Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            DateTime tstop = DateTime.Now;
+            if (show_finish_message)
+                MessageBox.Show(
+                   string.Format("Pomiar zakończony.\nWykonano {0} pomiarów dla {1} par.\nCzas pomiaru: {2:N1} sekund.", measurements_per_pair * pairs, pairs, (tstop - tstart).TotalSeconds),
+                   Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-  
+        private void DoImpedanceMeasurement(bool show_finish_message)
+        {
+            DateTime tstart = DateTime.Now;
+
+            int N = (int)this.edtNumberOfElectrodes.Value;
+            int pairs = (N * (N - 1)) / 2;
+            int measurements_per_pair = (int)this.edtNumberOfMeasurementsPerPair.Value;
+
+            this.progressBar1.Value = 0;
+            this.progressBar1.Maximum = pairs * measurements_per_pair;
+
+            if (mg == null)
+                mg = new MeasurementGrid();
+
+            DataTable dt = mg.PrepareDataContainer(N, Program.a.MeasurementType);
+            mg.Show();
+
+            Program.m.SetAllChannels(ChannelState.Ground);
+            Thread.Sleep(200);
+
+            Program.a.RestartMeasurementCycle();
+            int prev_channel = 1;
+            for (int excitated_electrode = 1; excitated_electrode <= N; excitated_electrode++)
+            {
+                // ustaw elektrodę wymuszającą na wysokim wejsciu mostka
+                Program.m.SetChannel(excitated_electrode, ChannelState.High);
+                Thread.Sleep(300);
+                Program.a.GetMeasurement();
+
+                for (int measured_electrode = excitated_electrode + 1; measured_electrode <= N; measured_electrode++)
+                {
+                    // ustaw elektrode mierzona na niskim wejsciu mostka
+                    Program.m.SetChannel(prev_channel, ChannelState.Ground, measured_electrode, ChannelState.Low);
+                    prev_channel = measured_electrode;
+                    //Program.m.SetChannel(measured_electrode, ChannelState.Low);
+
+                    Program.a.ShowMessage(string.Format("Elektrody {0}-{1}", excitated_electrode, measured_electrode));
+
+                    // wykonaj serię pomiaraów dla danej kombinacji elektrod
+                    for (int i = 0; i < measurements_per_pair; i++)
+                    {
+                        Application.DoEvents();
+
+                        if (this.socket_driver_window != null)
+                            this.socket_driver_window.UpdateGUI();
+                        Application.DoEvents();
+
+                        Complex cap = Program.a.GetMeasurement();
+                        Application.DoEvents();
+
+                        dt.Rows[excitated_electrode - 1][measured_electrode - 1] = cap;
+
+                        this.lblCurrentCapacity.Text = AgilentHelper.ImpedanceToString(cap, false);
+                        this.progressBar1.Value++;
+                        Application.DoEvents();
+                    }
+
+                    //                    Program.m.SetChannel(measured_electrode, ChannelState.Ground);
+                    // Application.DoEvents();
+
+                }
+
+                Program.m.SetChannel(excitated_electrode, ChannelState.Ground);
+                //Program.a.MeasureFrequency();
+                //Application.DoEvents(); 
+            }
+
+            DateTime tstop = DateTime.Now;
+
+
+            if (show_finish_message)
+                MessageBox.Show(
+                   string.Format("Pomiar zakończony.\nWykonano {0} pomiarów dla {1} par.\nCzas pomiaru: {2:N1} sekund.", measurements_per_pair * pairs, pairs, (tstop - tstart).TotalSeconds),
+                   Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+
         private void btnSaveMeasurements_Click(object sender, EventArgs e)
         {
-            if (mg == null)
+            this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(Properties.Settings.Default.meas_file_name);
+            this.saveFileDialog1.FileName = Path.GetFileName(Properties.Settings.Default.meas_file_name);
+
+            if (saveFileDialog1.ShowDialog() != DialogResult.OK)
                 return;
 
+            Properties.Settings.Default.meas_file_name = saveFileDialog1.FileName;
+        }
+
+        private void SaveCapacitanceData(string file_name)
+        {
             try
             {
                 DataTable dt = this.mg.data;
 
-                saveFileDialog1.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-                if (saveFileDialog1.ShowDialog() != DialogResult.OK)
-                    return;
+                string fn = Path.GetFileNameWithoutExtension(file_name);
+                string fn1 = fn + "-marix" + Path.GetExtension(file_name);
+                fn1 = Path.Combine(Path.GetDirectoryName(file_name), fn1);
 
-                string path = saveFileDialog1.FileName;
-                string fn = Path.GetFileNameWithoutExtension(path);
-                string fn1 = fn + "-marix" + Path.GetExtension(path);
-                fn1 = Path.Combine(Path.GetDirectoryName(path), fn1);
+                // zapis macierzy pomiarów (ostatnich pomiarow)
+                using (StreamWriter sw = new StreamWriter(new FileStream(fn1, FileMode.Create, FileAccess.ReadWrite, FileShare.None)))
+                {
+                    sw.WriteLine("{0} {1}", dt.Rows.Count, dt.Columns.Count);
+                    for (int r = 0; r < dt.Rows.Count; r++)
+                    {
+                        for (int c = 0; c < dt.Columns.Count; c++)
+                        {
+                            Complex val = (Complex)dt.Rows[r][c];
+                            string s = string.Format("{0} ", val.Real).Replace(',', '.');
+                            sw.Write(s);
+                        }
+                        sw.WriteLine();
+                    }
+                }
 
-                bool cap = this.mg.MeasurementType == MeasurementType.Capacitance_Parallel || this.mg.MeasurementType == MeasurementType.Capacitance_Serial;
-                bool imp = this.mg.MeasurementType == MeasurementType.Resistance_Reactance;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wyjątek podczas zapisu danych: " + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-                int cnt = 0;
-                cnt = cap ? cnt + 1 : cnt;
-                cnt = imp ? cnt + 1 : cnt;
-                Debug.Assert(cnt == 1);
-
+        private void SaveImpedanceData(string file_name)
+        {
+            try
+            {
+                DataTable dt = this.mg.data;
+                string fn = Path.GetFileNameWithoutExtension(file_name);
+                string fn1 = fn + "-marix" + Path.GetExtension(file_name);
+                fn1 = Path.Combine(Path.GetDirectoryName(file_name), fn1);
 
                 // zapis macierzy pomiarów (ostatnich pomiarow)
                 using (StreamWriter sw = new StreamWriter(new FileStream(fn1, FileMode.Create, FileAccess.ReadWrite, FileShare.None)))
@@ -231,11 +350,7 @@ namespace MultiplexerGUI
                         {
                             Complex val = (Complex)dt.Rows[r][c];
 
-                            string s = "????";
-                            if (cap)
-                                s = string.Format("{0} ", val.Real).Replace(',', '.');
-                            if (imp)
-                                s = val.ToString().Replace(",", ";");
+                            string s = string.Format("({0}; {1}) ", val.Real, val.Imaginary).Replace(',', '.');
                             sw.Write(s);
                         }
                         sw.WriteLine();
@@ -310,88 +425,9 @@ namespace MultiplexerGUI
         }
 
 
-
-        private void btnSelectIntrinsicCaps_Click(object sender, EventArgs e)
-        {
-            if (this.openFileDialog1.ShowDialog() != DialogResult.OK)
-                return;
-
-            Properties.Settings.Default.cap_offset_file = null;
-
-            try
-            {
-                float[,] intrinsic_cap = this.TryLoadIntrinsicCapacitances(this.openFileDialog1.FileName);
-                Properties.Settings.Default.cap_offset_file = this.openFileDialog1.FileName;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Błąd podczas wczytywania pliku pojemności własnych: " + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// Wczytaj plik z pojemnościami własnymi poszczególnych torów pomiarowych multipleksera
-        /// </summary>
-        /// <param name="file_name"></param>
-        /// <returns></returns>
-        private float[,] TryLoadIntrinsicCapacitances(string file_name)
-        {
-            //4 6 1
-            //1 2 15.78992E-12 
-            //1 3 15.79526E-12 
-            //1 4 15.79985E-12 
-            //2 3 15.79061E-12 
-            //2 4 15.79731E-12 
-            //3 4 15.80734E-12 
-
-            StreamReader sr = new StreamReader(new FileStream(file_name, FileMode.Open, FileAccess.Read, FileShare.Read));
-            string[] str_numbers = sr.ReadLine().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (str_numbers.Length != 3)
-                throw new FormatException("Błąd w nagłówku pliku - błąd nagłówka");
-
-            int electrodes_count = int.Parse(str_numbers[0]);
-            int pairs = int.Parse(str_numbers[1]);
-            int meas_per_pair = int.Parse(str_numbers[2]);
-
-            // walidacja wewnątrzplikowa oraz plik-program
-            if (pairs != (electrodes_count*(electrodes_count-1))/2)
-                throw new FormatException("Niezgodność elektrod i par elektrod");
-            if (meas_per_pair != 1)
-                throw new FormatException("Macierz pojemności własnych może posiadać tylko jeden pomiar na parę elektrod");
-            if (electrodes_count != (int)this.edtNumberOfElectrodes.Value)
-                throw new FormatException("Liczba elektrod w pliku pojemności własnych nie zgadza się z ustawieniami w programie");
-
-            float[,] caps = new float[electrodes_count, electrodes_count];
-            for (int i = 0; i < pairs; i++)
-            {
-                string sline = sr.ReadLine();
-
-                // jak mnie to zawsze w... irytuje.
-                sline = sline.Replace(".", Application.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-                sline = sline.Replace(",", Application.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-
-                str_numbers = sline.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                int hi = int.Parse(str_numbers[0]);
-                int lo = int.Parse(str_numbers[1]);
-                float cap = float.Parse(str_numbers[2]);
-                caps[hi-1, lo-1] = cap;
-            }
-            
-            return caps;
-        }
-
         private void btnShowSocketDriverWindow_Click(object sender, EventArgs e)
         {
-           // if (socket_driver_window == null)
-           // {
-            //    this.socket_driver_window = new SocketDriverForm();
-                this.socket_driver_window.Show();
-          //  }
-        }
-
-        private void tbRLCAddress_TextChanged(object sender, EventArgs e)
-        {
-
+            this.socket_driver_window.Show();
         }
 
         private void tmrMultKeepAlive_Tick(object sender, EventArgs e)
@@ -419,6 +455,25 @@ namespace MultiplexerGUI
                 this.lblStatus.Text = "Brak połączenia";
                 this.lblStatus.ForeColor = Color.Red;
             }
+
+            this.btnStartStop.Text = this.timer1.Enabled ? "Stop (3)" : "Start (3)";
+
+        }
+
+        private void btnStartStop_Click(object sender, EventArgs e)
+        {
+            this.timer1.Interval = (int)(this.numericUpDown1.Value * 1000);
+            this.timer1.Enabled = !this.timer1.Enabled;
+            this.UpdateGUI();
+
+            if (this.timer1.Enabled)
+                this.lblCurrentCapacity.Text = "Oczekiwanie na timer...";
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            this.btnCommenceMeasurements_Click(sender, e);
+            this.lblCurrentCapacity.Text = "Oczekiwanie na timer...";
         }
     }
 }

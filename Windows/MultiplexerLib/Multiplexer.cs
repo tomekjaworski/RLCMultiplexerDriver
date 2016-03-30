@@ -14,7 +14,10 @@ namespace MultiplexerLib
         Socket sock;
 
         //bool IsConnected { get { if (this.mult == null) return false; return true; } }
-        public  bool Connected { get { return this.sock.Connected; } }
+        public  bool Connected { get {
+                if (this.sock == null)
+                    return false;
+                return this.sock.Connected; } }
 
         public bool TestMode { get; set; }
 
@@ -142,6 +145,14 @@ namespace MultiplexerLib
         public bool SetChannel(int channel_id, ChannelState state)
         {
             InternalSetChannel(channel_id, state);
+            return Push();
+
+        }
+
+        public bool SetChannel(int c1, ChannelState s1, int c2, ChannelState s2)
+        {
+            InternalSetChannel(c1, s1);
+            InternalSetChannel(c2, s2);
             return Push();
 
         }
