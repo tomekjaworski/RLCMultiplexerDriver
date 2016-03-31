@@ -13,22 +13,34 @@ namespace MultiplexerLib
         public static double GetPrefix(double value, out string prefix, out double multiplier)
         {
             int degree = (int)Math.Floor(Math.Log10(Math.Abs(value)) / 3);
+            if (degree > 8)
+                degree = 8;
+            if (degree < -8)
+                degree = -8;
+
             double scaled = value * Math.Pow(1000, -degree);
 
             string[] high = new[] { "k", "M", "G", "T", "P", "E", "Z", "Y" };
             string[] low = new[] { "m", "\u03bc", "n", "p", "f", "a", "z", "y" };
 
-            if (degree >= 0)
+            if (degree > 0)
             {
                 prefix = high[degree - 1];
                 multiplier = Math.Pow(1000, -degree);
                 return scaled;
             }
 
-            //  degree < 0
-            prefix = low[-degree - 1];
-            multiplier = Math.Pow(1000, -degree);
-            return scaled;
+            if (degree < 0)
+            {
+                prefix = low[-degree - 1];
+                multiplier = Math.Pow(1000, -degree);
+                return scaled;
+            }
+
+            // degree == 0
+            prefix = "";
+            multiplier = 1;
+            return value;
         }
 
         public static string ToSI(double value, string unit)
