@@ -16,7 +16,7 @@ namespace MultiplexerGUI
         public DataTable data;
         public MeasurementType MeasurementType { get; private set; }
 
-        double rmin, rmax;
+        //double rmin, rmax;
 
         public MeasurementGrid()
         {
@@ -52,13 +52,15 @@ namespace MultiplexerGUI
 
         private void Data_RowChanged(object sender, DataRowChangeEventArgs e)
         {
+            /*
             this.RecalculateColors();
             this.dataGridView1.Invalidate();
-
+            */
         }
 
         private void RecalculateColors()
         {
+            /*
             rmin = double.MaxValue;
             rmax = double.MinValue;
 
@@ -72,6 +74,7 @@ namespace MultiplexerGUI
                     rmin = Math.Min(rmin, cp.Real);
                     rmax = Math.Max(rmax, cp.Real);
                 }
+                */
         }
 
         private void dgGrid_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
@@ -138,6 +141,7 @@ namespace MultiplexerGUI
 
         private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
+            /*
             if (e.RowIndex == -1 || e.ColumnIndex == -1)
                 return;
 
@@ -160,6 +164,7 @@ namespace MultiplexerGUI
 
             Color c = Color.FromArgb(255, (int)coef, (int)coef);
             e.CellStyle.BackColor = c;
+            */
         }
     }
 }
