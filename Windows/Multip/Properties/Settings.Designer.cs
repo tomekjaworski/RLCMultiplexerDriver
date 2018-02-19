@@ -154,5 +154,17 @@ namespace MultiplexerGUI.Properties {
                 this["cap_offset_file"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool switch_like_tomograph {
+            get {
+                return ((bool)(this["switch_like_tomograph"]));
+            }
+            set {
+                this["switch_like_tomograph"] = value;
+            }
+        }
     }
 }

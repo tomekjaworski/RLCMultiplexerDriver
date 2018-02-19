@@ -140,6 +140,7 @@ namespace MultiplexerGUI
             int N = (int)this.edtNumberOfElectrodes.Value;
             int pairs = (N * (N - 1)) / 2;
             int measurements_per_pair = (int)this.edtNumberOfMeasurementsPerPair.Value;
+            bool do_switching = this.chkUseTomographSwitchingPattern.Checked;
 
             this.progressBar1.Value = 0;
             this.progressBar1.Maximum = pairs * measurements_per_pair;
@@ -153,22 +154,24 @@ namespace MultiplexerGUI
             this.full_sensor_measurements = new List<List<double>>();
             this.full_sensor_measurements.Add(new List<double>(new double[] { N, pairs, measurements_per_pair }));
 
-            Program.m.SetAllChannels(ChannelState.Ground);
+            if (do_switching)
+                Program.m.SetAllChannels(ChannelState.Ground);
             Thread.Sleep(200);
 
             Program.a.RestartMeasurementCycle();
 
-            for (int excitated_electrode = 1; excitated_electrode <= N; excitated_electrode++)
-            {
+            for (int excitated_electrode = 1; excitated_electrode <= N; excitated_electrode++) {
                 // ustaw elektrodę wymuszającą na wysokim wejsciu mostka
-                Program.m.SetChannel(excitated_electrode, ChannelState.High);
-                Thread.Sleep(300);
-                Program.a.GetMeasurement();
+                if (do_switching) {
+                    Program.m.SetChannel(excitated_electrode, ChannelState.High);
+                    Thread.Sleep(300);
+                    Program.a.GetMeasurement();
+                }
 
-                for (int measured_electrode = excitated_electrode + 1; measured_electrode <= N; measured_electrode++)
-                {
+                for (int measured_electrode = excitated_electrode + 1; measured_electrode <= N; measured_electrode++) {
                     // ustaw elektrode mierzona na niskim wejsciu mostka
-                    Program.m.SetChannel(measured_electrode, ChannelState.Low);
+                    if (do_switching)
+                        Program.m.SetChannel(measured_electrode, ChannelState.Low);
                     Program.a.ShowMessage(string.Format("Elektrody {0}-{1}", excitated_electrode, measured_electrode));
 
                     // nowy wektro pomiarowy
@@ -176,8 +179,7 @@ namespace MultiplexerGUI
                     pom.AddRange(new double[] { excitated_electrode, measured_electrode, measurements_per_pair });
 
                     // wykonaj serię pomiaraów dla danej kombinacji elektrod
-                    for (int i = 0; i < measurements_per_pair; i++)
-                    {
+                    for (int i = 0; i < measurements_per_pair; i++) {
                         Application.DoEvents();
                         if (this.socket_driver_window != null)
                             this.socket_driver_window.UpdateGUI();
@@ -186,7 +188,7 @@ namespace MultiplexerGUI
                         Application.DoEvents();
 
                         // korekta
-                       // if (intrinsic_cap != null)
+                        // if (intrinsic_cap != null)
                         //    c = c - intrinsic_cap[excitated_electrode - 1, measured_electrode - 1];
 
                         dt.Rows[excitated_electrode - 1][measured_electrode - 1] = cap.Real;
@@ -198,12 +200,14 @@ namespace MultiplexerGUI
                     }
                     full_sensor_measurements.Add(pom);
 
-                    Program.m.SetChannel(measured_electrode, ChannelState.Ground);
+                    if (do_switching)
+                        Program.m.SetChannel(measured_electrode, ChannelState.Ground);
                     Application.DoEvents();
 
                 }
 
-                Program.m.SetChannel(excitated_electrode, ChannelState.Ground);
+                if (do_switching)
+                    Program.m.SetChannel(excitated_electrode, ChannelState.Ground);
                 //Program.a.MeasureFrequency();
                 //Application.DoEvents(); 
             }
