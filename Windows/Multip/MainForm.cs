@@ -30,6 +30,10 @@ namespace MultiplexerGUI
             this.relay_driver_window = new RelayDriverForm();
             this.socket_driver_window = new SocketDriverForm();
 
+            this.rbSerialCapacitance.Checked = Properties.Settings.Default.measurement_type == MeasurementType.Capacitance_Serial;
+            this.rbParallelCapacitance.Checked = Properties.Settings.Default.measurement_type == MeasurementType.Capacitance_Parallel;
+            this.rbImpedance.Checked = Properties.Settings.Default.measurement_type == MeasurementType.Resistance_Reactance;
+
             this.UpdateGUI();
         }
    
@@ -474,6 +478,17 @@ namespace MultiplexerGUI
         {
             this.btnCommenceMeasurements_Click(sender, e);
             this.lblCurrentCapacity.Text = "Oczekiwanie na timer...";
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Properties.Settings.Default.measurement_type = MeasurementType.Unknown;
+            if (this.rbSerialCapacitance.Checked)
+                Properties.Settings.Default.measurement_type = MeasurementType.Capacitance_Serial;
+            if (this.rbParallelCapacitance.Checked)
+                Properties.Settings.Default.measurement_type = MeasurementType.Capacitance_Parallel;
+            if (this.rbImpedance.Checked)
+                Properties.Settings.Default.measurement_type = MeasurementType.Resistance_Reactance;
         }
     }
 }

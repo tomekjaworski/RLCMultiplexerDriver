@@ -49,30 +49,6 @@ namespace MultiplexerGUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool rb_serial {
-            get {
-                return ((bool)(this["rb_serial"]));
-            }
-            set {
-                this["rb_serial"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool rb_paral {
-            get {
-                return ((bool)(this["rb_paral"]));
-            }
-            set {
-                this["rb_paral"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2")]
         public decimal voltage {
             get {
@@ -176,6 +152,18 @@ namespace MultiplexerGUI.Properties {
             }
             set {
                 this["interval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Capacitance_Parallel")]
+        public global::MultiplexerLib.MeasurementType measurement_type {
+            get {
+                return ((global::MultiplexerLib.MeasurementType)(this["measurement_type"]));
+            }
+            set {
+                this["measurement_type"] = value;
             }
         }
     }

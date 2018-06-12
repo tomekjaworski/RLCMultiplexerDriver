@@ -8,12 +8,6 @@
     <Setting Name="ip_agilent" Type="System.String" Scope="User">
       <Value Profile="(Default)">kis121.kis.pff</Value>
     </Setting>
-    <Setting Name="rb_serial" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="rb_paral" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
     <Setting Name="voltage" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">2</Value>
     </Setting>
@@ -40,6 +34,9 @@
     </Setting>
     <Setting Name="interval" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">300</Value>
+    </Setting>
+    <Setting Name="measurement_type" Type="MultiplexerLib.MeasurementType" Scope="User">
+      <Value Profile="(Default)">Capacitance_Parallel</Value>
     </Setting>
   </Settings>
 </SettingsFile>

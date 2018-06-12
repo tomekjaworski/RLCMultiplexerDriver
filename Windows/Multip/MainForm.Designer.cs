@@ -307,12 +307,10 @@
             // rbImpedance
             // 
             this.rbImpedance.AutoSize = true;
-            this.rbImpedance.Checked = true;
             this.rbImpedance.Location = new System.Drawing.Point(6, 44);
             this.rbImpedance.Name = "rbImpedance";
             this.rbImpedance.Size = new System.Drawing.Size(107, 17);
             this.rbImpedance.TabIndex = 422;
-            this.rbImpedance.TabStop = true;
             this.rbImpedance.Text = "Impedancja (R-X)";
             this.rbImpedance.UseVisualStyleBackColor = true;
             // 
@@ -333,6 +331,7 @@
             this.rbParallelCapacitance.Name = "rbParallelCapacitance";
             this.rbParallelCapacitance.Size = new System.Drawing.Size(164, 17);
             this.rbParallelCapacitance.TabIndex = 421;
+            this.rbParallelCapacitance.TabStop = true;
             this.rbParallelCapacitance.Text = "Pojemność równolegle (Cp-D)";
             this.rbParallelCapacitance.UseVisualStyleBackColor = true;
             // 
@@ -785,6 +784,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "MainForm";
             this.Text = "Pomiary pojemności";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
