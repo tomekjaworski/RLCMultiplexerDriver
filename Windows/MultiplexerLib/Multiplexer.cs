@@ -5,19 +5,23 @@ using System.Text;
 using System.Net.Sockets;
 using System.Diagnostics;
 using System.Net;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace MultiplexerLib
 {
     public class Multiplexer
     {
         private UInt16[] matrix;
-        Socket sock;
+        TcpClient client;
+        NetworkStream stream;
+
 
         //bool IsConnected { get { if (this.mult == null) return false; return true; } }
         public  bool Connected { get {
-                if (this.sock == null)
+                if (this.client == null)
                     return false;
-                return this.sock.Connected; } }
+                return this.client.Connected; } }
 
         public bool TestMode { get; set; }
 
@@ -25,24 +29,29 @@ namespace MultiplexerLib
         public Multiplexer(bool test_mode)
         {
             this.matrix = new UInt16[16];
-            this.sock = null;
+            this.client = null;
+            this.stream = null;
             this.TestMode = test_mode;
         }
 
 
-        public void Connect(string address)
+        public async void Connect(string address)
         {
             if (this.TestMode)
                 return;
 
-            if (this.sock != null)
-                this.sock.Close();
+            if (this.client != null)
+            {
+                this.stream.Close();
+                this.client.Close();
+            }
 
-            this.sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            this.sock.SendTimeout = 3000;
-            this.sock.ReceiveTimeout = 3000;
-            this.sock.Connect(new IPEndPoint(IPAddress.Parse(address), 14000));
+            this.client = new TcpClient();
+            this.client.SendTimeout = 3000;
+            this.client.ReceiveTimeout = 3000;
 
+            await this.client.ConnectAsync(IPAddress.Parse(address), 14000);
+            this.stream = this.client.GetStream();
         }
 
         public void SafeDisconnect()
@@ -52,8 +61,9 @@ namespace MultiplexerLib
 
             try
             {
-                this.sock.Close();
-                this.sock = null;
+                this.client.Close();
+                this.client = null;
+                this.stream = null;
             }
             catch (Exception e)
             {
@@ -73,10 +83,10 @@ namespace MultiplexerLib
 
         }
 
-        public bool SetSwitch(int card_id, Switch switch_id, bool state)
+        public Task<bool> SetSwitch(int card_id, Switch switch_id, bool state)
         {
             this.InternalSetSwitch(card_id, switch_id, state);
-            return Push();
+            return this.Push();
         }
 
         public bool GetSwitch(int card_id, Switch switch_id)
@@ -90,9 +100,9 @@ namespace MultiplexerLib
         /// </summary>
         /// <param name="card">Numer karty, liczony od 0</param>
         /// <param name="state">Stan diody</param>
-        public void SetLED(int card, bool state)
+        public Task SetLED(int card, bool state)
         {
-            this.SetSwitch(card, Switch.LED, state);
+            return this.SetSwitch(card, Switch.LED, state);
         }
 
         public bool GetLED(int card)
@@ -142,18 +152,18 @@ namespace MultiplexerLib
         /// </summary>
         /// <param name="channel_id">Numer kanału, liczony od 1</param>
         /// <param name="state">Tryb kanału</param>
-        public bool SetChannel(int channel_id, ChannelState state)
+        public Task<bool> SetChannel(int channel_id, ChannelState state)
         {
             InternalSetChannel(channel_id, state);
-            return Push();
+            return this.Push();
 
         }
 
-        public bool SetChannel(int c1, ChannelState s1, int c2, ChannelState s2)
+        public Task<bool> SetChannel(int c1, ChannelState s1, int c2, ChannelState s2)
         {
             InternalSetChannel(c1, s1);
             InternalSetChannel(c2, s2);
-            return Push();
+            return this.Push();
 
         }
 
@@ -198,7 +208,7 @@ namespace MultiplexerLib
             return ChannelState.None;
         }
 
-        public bool SetAllChannels(ChannelState channelState)
+        public Task<bool> SetAllChannels(ChannelState channelState)
         {
             for (int i = 0; i < 64; i++)
                 this.InternalSetChannel(i + 1, channelState);
@@ -209,12 +219,12 @@ namespace MultiplexerLib
         // ********************************************************************************
 
 
-        private bool Push()
+        private Task<bool> Push()
         {
             if (this.TestMode)
-                return true;
+                return Task.FromResult<bool>(true);
 
-            if (!this.sock.Connected)
+            if (!this.client.Connected)
                 throw new Exception("Brak połączenia z multiplekserem.");
 
             //NetworkStream ns = this.mult.GetStream();
@@ -237,11 +247,11 @@ namespace MultiplexerLib
             return this.TrySendBuffer(buff);
         }
 
-        private bool TrySendBuffer(byte[] buff)
+        private async Task<bool> TrySendBuffer(byte[] buff)
         {
             try
             {
-                this.sock.Send(buff);
+                await this.stream.WriteAsync(buff, 0, buff.Length);
                 return true;
             } catch(Exception e)
             {
@@ -250,15 +260,13 @@ namespace MultiplexerLib
             }
         }
 
-        public bool Ping()
+        public Task<bool> Ping()
         {
             if (this.TestMode)
-                return true;
+                return Task.FromResult<bool>(true);
 
-            if (!this.sock.Connected)
+            if (!this.client.Connected)
                 throw new Exception("Brak połączenia z multiplekserem.");
-
-            //NetworkStream ns = this.mult.GetStream();
 
             byte[] buff = new byte[2 + this.matrix.Length * 2];
 
@@ -275,6 +283,7 @@ namespace MultiplexerLib
                 buff[i * 2 + 0 + 2] = (byte)(data);
             }
 
+
             return this.TrySendBuffer(buff);
         }
 
@@ -282,7 +291,7 @@ namespace MultiplexerLib
 
 
 
-        public bool SetAllLED(bool state)
+        public Task<bool> SetAllLED(bool state)
         {
             for (int i = 0; i < 16; i++)
                 this.InternalSetSwitch(i, Switch.LED,state);

@@ -416,6 +416,13 @@ namespace MultiplexerGUI
                 this.label2.Text = "Wykryto.";
 
             }
+            catch(SocketException se)
+            {
+                this.label2.Font = new Font(label2.Font, FontStyle.Bold);
+                this.label2.ForeColor = Color.Red;
+                this.label2.Text = $"Bład! ({se.ErrorCode})";
+
+            }
             catch (Exception ex)
             {
                 //MessageBox.Show("Błąd podczas wykrywania multipleksera: " + ex.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -471,7 +478,10 @@ namespace MultiplexerGUI
             this.UpdateGUI();
 
             if (this.timer1.Enabled)
+            {
                 this.lblCurrentCapacity.Text = "Oczekiwanie na timer...";
+                this.btnCommenceMeasurements_Click(sender, e);
+            }
         }
 
         private void timer1_Tick(object sender, EventArgs e)

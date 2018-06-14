@@ -60,12 +60,18 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.btnSearchForMultiplexer = new System.Windows.Forms.Button();
+            this.tbMultiplexerAddress = new System.Windows.Forms.TextBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
+            this.tbRLCAddress = new System.Windows.Forms.TextBox();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.edtAverage = new System.Windows.Forms.NumericUpDown();
             this.panel5 = new System.Windows.Forms.Panel();
             this.label148 = new System.Windows.Forms.Label();
             this.btnDoOneMeasurement = new System.Windows.Forms.Button();
+            this.edtTriggerDelay = new System.Windows.Forms.NumericUpDown();
+            this.edtMeasurementFrequency = new System.Windows.Forms.NumericUpDown();
+            this.edtVoltage = new System.Windows.Forms.NumericUpDown();
             this.panel6 = new System.Windows.Forms.Panel();
             this.lblNumberOfMeasurements = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
@@ -81,12 +87,6 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.edtNumberOfMeasurementsPerPair = new System.Windows.Forms.NumericUpDown();
             this.edtNumberOfElectrodes = new System.Windows.Forms.NumericUpDown();
-            this.tbRLCAddress = new System.Windows.Forms.TextBox();
-            this.tbMultiplexerAddress = new System.Windows.Forms.TextBox();
-            this.edtAverage = new System.Windows.Forms.NumericUpDown();
-            this.edtTriggerDelay = new System.Windows.Forms.NumericUpDown();
-            this.edtMeasurementFrequency = new System.Windows.Forms.NumericUpDown();
-            this.edtVoltage = new System.Windows.Forms.NumericUpDown();
             label149 = new System.Windows.Forms.Label();
             label150 = new System.Windows.Forms.Label();
             label151 = new System.Windows.Forms.Label();
@@ -107,15 +107,15 @@
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.edtAverage)).BeginInit();
             this.panel5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.edtTriggerDelay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.edtMeasurementFrequency)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.edtVoltage)).BeginInit();
             this.panel6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.edtNumberOfMeasurementsPerPair)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.edtNumberOfElectrodes)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtAverage)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtTriggerDelay)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtMeasurementFrequency)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtVoltage)).BeginInit();
             this.SuspendLayout();
             // 
             // label149
@@ -247,6 +247,24 @@
             label165.Size = new System.Drawing.Size(99, 13);
             label165.TabIndex = 457;
             label165.Text = "Zmierzona wartość:";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(12, 390);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(77, 13);
+            label5.TabIndex = 460;
+            label5.Text = "Plik wyjściowy:";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new System.Drawing.Point(472, 434);
+            label6.Name = "label6";
+            label6.Size = new System.Drawing.Size(116, 13);
+            label6.TabIndex = 463;
+            label6.Text = "Interwał pomiarowy [s]:";
             // 
             // btnConnectToMultiplexer
             // 
@@ -413,6 +431,15 @@
             this.btnSearchForMultiplexer.UseVisualStyleBackColor = true;
             this.btnSearchForMultiplexer.Click += new System.EventHandler(this.btnSearchForMultiplexer_Click);
             // 
+            // tbMultiplexerAddress
+            // 
+            this.tbMultiplexerAddress.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::MultiplexerGUI.Properties.Settings.Default, "ip_raspberrypi", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.tbMultiplexerAddress.Location = new System.Drawing.Point(253, 12);
+            this.tbMultiplexerAddress.Name = "tbMultiplexerAddress";
+            this.tbMultiplexerAddress.Size = new System.Drawing.Size(100, 20);
+            this.tbMultiplexerAddress.TabIndex = 412;
+            this.tbMultiplexerAddress.Text = global::MultiplexerGUI.Properties.Settings.Default.ip_raspberrypi;
+            // 
             // panel3
             // 
             this.panel3.BackColor = System.Drawing.Color.YellowGreen;
@@ -435,6 +462,15 @@
             this.label4.TabIndex = 461;
             this.label4.Text = "Adres/nazwa hosta:";
             // 
+            // tbRLCAddress
+            // 
+            this.tbRLCAddress.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::MultiplexerGUI.Properties.Settings.Default, "ip_agilent", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.tbRLCAddress.Location = new System.Drawing.Point(253, 36);
+            this.tbRLCAddress.Name = "tbRLCAddress";
+            this.tbRLCAddress.Size = new System.Drawing.Size(157, 20);
+            this.tbRLCAddress.TabIndex = 416;
+            this.tbRLCAddress.Text = global::MultiplexerGUI.Properties.Settings.Default.ip_agilent;
+            // 
             // panel4
             // 
             this.panel4.BackColor = System.Drawing.Color.WhiteSmoke;
@@ -454,6 +490,15 @@
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(843, 118);
             this.panel4.TabIndex = 437;
+            // 
+            // edtAverage
+            // 
+            this.edtAverage.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "average", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.edtAverage.Location = new System.Drawing.Point(601, 25);
+            this.edtAverage.Name = "edtAverage";
+            this.edtAverage.Size = new System.Drawing.Size(86, 20);
+            this.edtAverage.TabIndex = 436;
+            this.edtAverage.Value = global::MultiplexerGUI.Properties.Settings.Default.average;
             // 
             // panel5
             // 
@@ -485,6 +530,65 @@
             this.btnDoOneMeasurement.Text = "Wykonaj 1 pomiar";
             this.btnDoOneMeasurement.UseVisualStyleBackColor = true;
             this.btnDoOneMeasurement.Click += new System.EventHandler(this.btnDoOneMeasurement_Click);
+            // 
+            // edtTriggerDelay
+            // 
+            this.edtTriggerDelay.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "delay", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.edtTriggerDelay.DecimalPlaces = 3;
+            this.edtTriggerDelay.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.edtTriggerDelay.Location = new System.Drawing.Point(478, 25);
+            this.edtTriggerDelay.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.edtTriggerDelay.Name = "edtTriggerDelay";
+            this.edtTriggerDelay.Size = new System.Drawing.Size(96, 20);
+            this.edtTriggerDelay.TabIndex = 430;
+            this.edtTriggerDelay.Value = global::MultiplexerGUI.Properties.Settings.Default.delay;
+            // 
+            // edtMeasurementFrequency
+            // 
+            this.edtMeasurementFrequency.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "freq", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.edtMeasurementFrequency.Location = new System.Drawing.Point(322, 25);
+            this.edtMeasurementFrequency.Maximum = new decimal(new int[] {
+            2000000,
+            0,
+            0,
+            0});
+            this.edtMeasurementFrequency.Minimum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.edtMeasurementFrequency.Name = "edtMeasurementFrequency";
+            this.edtMeasurementFrequency.Size = new System.Drawing.Size(96, 20);
+            this.edtMeasurementFrequency.TabIndex = 429;
+            this.edtMeasurementFrequency.Value = global::MultiplexerGUI.Properties.Settings.Default.freq;
+            // 
+            // edtVoltage
+            // 
+            this.edtVoltage.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "voltage", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.edtVoltage.DecimalPlaces = 3;
+            this.edtVoltage.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.edtVoltage.Location = new System.Drawing.Point(194, 25);
+            this.edtVoltage.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.edtVoltage.Name = "edtVoltage";
+            this.edtVoltage.Size = new System.Drawing.Size(96, 20);
+            this.edtVoltage.TabIndex = 428;
+            this.edtVoltage.Value = global::MultiplexerGUI.Properties.Settings.Default.voltage;
             // 
             // panel6
             // 
@@ -565,28 +669,10 @@
             this.tmrMultKeepAlive.Interval = 1000;
             this.tmrMultKeepAlive.Tick += new System.EventHandler(this.tmrMultKeepAlive_Tick);
             // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(12, 390);
-            label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(77, 13);
-            label5.TabIndex = 460;
-            label5.Text = "Plik wyjściowy:";
-            // 
             // timer1
             // 
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new System.Drawing.Point(472, 434);
-            label6.Name = "label6";
-            label6.Size = new System.Drawing.Size(116, 13);
-            label6.TabIndex = 463;
-            label6.Text = "Interwał pomiarowy [s]:";
             // 
             // btnStartStop
             // 
@@ -668,92 +754,6 @@
             this.edtNumberOfElectrodes.ValueChanged += new System.EventHandler(this.edtNumberOfElectrodes_ValueChanged);
             this.edtNumberOfElectrodes.BindingContextChanged += new System.EventHandler(this.edtNumberOfElectrodes_BindingContextChanged);
             // 
-            // tbRLCAddress
-            // 
-            this.tbRLCAddress.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::MultiplexerGUI.Properties.Settings.Default, "ip_agilent", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.tbRLCAddress.Location = new System.Drawing.Point(253, 36);
-            this.tbRLCAddress.Name = "tbRLCAddress";
-            this.tbRLCAddress.Size = new System.Drawing.Size(157, 20);
-            this.tbRLCAddress.TabIndex = 416;
-            this.tbRLCAddress.Text = global::MultiplexerGUI.Properties.Settings.Default.ip_agilent;
-            // 
-            // tbMultiplexerAddress
-            // 
-            this.tbMultiplexerAddress.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::MultiplexerGUI.Properties.Settings.Default, "ip_raspberrypi", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.tbMultiplexerAddress.Location = new System.Drawing.Point(253, 12);
-            this.tbMultiplexerAddress.Name = "tbMultiplexerAddress";
-            this.tbMultiplexerAddress.Size = new System.Drawing.Size(100, 20);
-            this.tbMultiplexerAddress.TabIndex = 412;
-            this.tbMultiplexerAddress.Text = global::MultiplexerGUI.Properties.Settings.Default.ip_raspberrypi;
-            // 
-            // edtAverage
-            // 
-            this.edtAverage.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "average", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.edtAverage.Location = new System.Drawing.Point(601, 25);
-            this.edtAverage.Name = "edtAverage";
-            this.edtAverage.Size = new System.Drawing.Size(86, 20);
-            this.edtAverage.TabIndex = 436;
-            this.edtAverage.Value = global::MultiplexerGUI.Properties.Settings.Default.average;
-            // 
-            // edtTriggerDelay
-            // 
-            this.edtTriggerDelay.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "delay", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.edtTriggerDelay.DecimalPlaces = 3;
-            this.edtTriggerDelay.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.edtTriggerDelay.Location = new System.Drawing.Point(478, 25);
-            this.edtTriggerDelay.Maximum = new decimal(new int[] {
-            15,
-            0,
-            0,
-            0});
-            this.edtTriggerDelay.Name = "edtTriggerDelay";
-            this.edtTriggerDelay.Size = new System.Drawing.Size(96, 20);
-            this.edtTriggerDelay.TabIndex = 430;
-            this.edtTriggerDelay.Value = global::MultiplexerGUI.Properties.Settings.Default.delay;
-            // 
-            // edtMeasurementFrequency
-            // 
-            this.edtMeasurementFrequency.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "freq", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.edtMeasurementFrequency.Location = new System.Drawing.Point(322, 25);
-            this.edtMeasurementFrequency.Maximum = new decimal(new int[] {
-            2000000,
-            0,
-            0,
-            0});
-            this.edtMeasurementFrequency.Minimum = new decimal(new int[] {
-            20,
-            0,
-            0,
-            0});
-            this.edtMeasurementFrequency.Name = "edtMeasurementFrequency";
-            this.edtMeasurementFrequency.Size = new System.Drawing.Size(96, 20);
-            this.edtMeasurementFrequency.TabIndex = 429;
-            this.edtMeasurementFrequency.Value = global::MultiplexerGUI.Properties.Settings.Default.freq;
-            // 
-            // edtVoltage
-            // 
-            this.edtVoltage.DataBindings.Add(new System.Windows.Forms.Binding("Value", global::MultiplexerGUI.Properties.Settings.Default, "voltage", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-            this.edtVoltage.DecimalPlaces = 3;
-            this.edtVoltage.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.edtVoltage.Location = new System.Drawing.Point(194, 25);
-            this.edtVoltage.Maximum = new decimal(new int[] {
-            20,
-            0,
-            0,
-            0});
-            this.edtVoltage.Name = "edtVoltage";
-            this.edtVoltage.Size = new System.Drawing.Size(96, 20);
-            this.edtVoltage.TabIndex = 428;
-            this.edtVoltage.Value = global::MultiplexerGUI.Properties.Settings.Default.voltage;
-            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -793,17 +793,17 @@
             this.panel3.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.edtAverage)).EndInit();
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.edtTriggerDelay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.edtMeasurementFrequency)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.edtVoltage)).EndInit();
             this.panel6.ResumeLayout(false);
             this.panel6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.edtNumberOfMeasurementsPerPair)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.edtNumberOfElectrodes)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtAverage)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtTriggerDelay)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtMeasurementFrequency)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.edtVoltage)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
